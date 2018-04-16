@@ -62,50 +62,6 @@ void printCodes(struct MinHeapNode* root, string str)
     printCodes(root->right, str + "1");
 }
 
-// The main function that builds a Huffman Tree and
-// print codes by traversing the built Huffman Tree
-//void HuffmanCodes(char data[], int freq[], int size)
-//{
-//    struct MinHeapNode *left, *right, *top;
-//
-//    // Create a min heap & inserts all characters of data[]
-//    priority_queue<MinHeapNode*, vector<MinHeapNode*>, compare> minHeap;
-//
-//    for (int i = 0; i < size; ++i)
-//        minHeap.push(new MinHeapNode(data[i], freq[i]));
-//
-//    // Iterate while size of heap doesn't become 1
-//    while (minHeap.size() != 1) {
-//
-//        // Extract the two minimum
-//        // freq items from min heap
-//        left = minHeap.top();
-//        minHeap.pop();
-//
-//        right = minHeap.top();
-//        minHeap.pop();
-//
-//        // Create a new internal node with
-//        // frequency equal to the sum of the
-//        // two nodes frequencies. Make the
-//        // two extracted node as left and right children
-//        // of this new node. Add this node
-//        // to the min heap '$' is a special value
-//        // for internal nodes, not used
-//        top = new MinHeapNode('$', left->freq + right->freq);
-//
-//        top->left = left;
-//        top->right = right;
-//
-//        minHeap.push(top);
-//    }
-//
-//    // Print Huffman codes using
-//    // the Huffman tree built above
-//    printCodes(minHeap.top(), "");
-//}
-
-
 
 void HuffmanCodes(unordered_map<char, unsigned >& m)
 {
@@ -145,12 +101,46 @@ void HuffmanCodes(unordered_map<char, unsigned >& m)
 
     // Print Huffman codes using
     // the Huffman tree built above
-    printCodes(minHeap.top(), "");
+    // printCodes(minHeap.top(), "");
 }
 
 
+void convertBinToStr(unordered_map<char, unsigned >& m, string source_file, string decode_file)
+{
+	ifstream codestream(source_file);
+	
+	ofstream decodestream;
+	
+	decodestream = ofstream(decode_file, ios::out | ios::binary);
+	
+    codestream >> noskipws; // read space?
+	
+    char ch; 
+	unsigned binary;
+	
+    for (;;) {
+        codestream >> ch;
+		
+        binary = m[ch];
+		
+		cout << ch << ": " << binary << "\n";
 
+		decodestream.write((char*)&binary, sizeof(unsigned));
+	
+        if (codestream.eof()) break;
+      
+    }
+	
+	cout << "Decode Finishes\n";
 
+	decodestream.close();
+	
+}
+
+void convertStrToBin(unordered_map<char, unsigned >& m, string source_file, string decode_file)
+{
+	
+}
 
 unordered_map<char, unsigned> ReadSourceFile(string filename) {
 
@@ -178,7 +168,10 @@ unordered_map<char, unsigned> ReadSourceFile(string filename) {
 // Driver program to test above functions
 int main()
 {
-    unordered_map<char, unsigned>  m = ReadSourceFile("../alice.txt");
+	string source_file = "alice.txt";
+	string decode_file = "alice_decode.binary";
+	
+    unordered_map<char, unsigned>  m = ReadSourceFile(source_file);
 
 //    cout << m.size() << endl;
 //    for (auto& e : m) {
@@ -191,6 +184,10 @@ int main()
 //    HuffmanCodes(arr, freq, size);
 
     HuffmanCodes(m);
+	
+	convertStrToBin(m, source_file, decode_file);
+	
+	convertBinToStr(m, source_file, decode_file);
 
     return 0;
 }

@@ -1,0 +1,3 @@
+/home/ubuntu/ECE4122/Project/f-compression/CMakeFiles/rebuild_cache.dir
+/home/ubuntu/ECE4122/Project/f-compression/CMakeFiles/edit_cache.dir
+/home/ubuntu/ECE4122/Project/f-compression/CMakeFiles/encode.dir

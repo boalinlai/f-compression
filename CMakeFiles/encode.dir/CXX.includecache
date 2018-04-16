@@ -1,0 +1,20 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/home/ubuntu/ECE4122/Project/f-compression/encode.cpp
+string
+-
+iostream
+-
+fstream
+-
+queue
+-
+unordered_map
+-
+
