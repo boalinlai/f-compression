@@ -17,6 +17,7 @@
 #include <unordered_map>
 
 using namespace std;
+unordered_map<char, string> codes;
 
 // A Huffman tree node
 struct MinHeapNode {
@@ -62,8 +63,18 @@ void printCodes(struct MinHeapNode* root, string str)
     printCodes(root->right, str + "1");
 }
 
+void storeCodes(struct MinHeapNode* root, string str)
+{
+    if (root==NULL)
+        return;
+	
+    if (root->data != '$')
+        codes[root->data]=str;
+    storeCodes(root->left, str + "0");
+    storeCodes(root->right, str + "1");
+}
 
-void HuffmanCodes(unordered_map<char, unsigned >& m)
+void HuffmanCodes(unordered_map<char, unsigned>& m)
 {
     struct MinHeapNode *left, *right, *top;
 
@@ -101,44 +112,44 @@ void HuffmanCodes(unordered_map<char, unsigned >& m)
 
     // Print Huffman codes using
     // the Huffman tree built above
-    // printCodes(minHeap.top(), "");
+    printCodes(minHeap.top(), "");
+	storeCodes(minHeap.top(), "");
 }
 
 
-void convertBinToStr(unordered_map<char, unsigned >& m, string source_file, string decode_file)
+void convertStrToBin(string source_file, string decode_file)
 {
 	ifstream codestream(source_file);
 	
 	ofstream decodestream;
 	
-	decodestream = ofstream(decode_file, ios::out | ios::binary);
+	decodestream = ofstream(decode_file, ios::out ); //| ios::binary
 	
     codestream >> noskipws; // read space?
 	
     char ch; 
-	unsigned binary;
+	string code;
+	string encoded_text;
 	
     for (;;) {
+		
         codestream >> ch;
 		
-        binary = m[ch];
+        code = codes[ch];
 		
-		cout << ch << ": " << binary << "\n";
+		cout << ch << ": " << code << "\n";
 
-		decodestream.write((char*)&binary, sizeof(unsigned));
+		encoded_text += code;
 	
         if (codestream.eof()) break;
       
     }
+
+	decodestream.write((char*)&encoded_text, sizeof(char)*encoded_text.size());
 	
-	cout << "Decode Finishes\n";
+	cout << "Decode Finishes\n" << encoded_text << "\nsize:" << encoded_text.size();
 
 	decodestream.close();
-	
-}
-
-void convertStrToBin(unordered_map<char, unsigned >& m, string source_file, string decode_file)
-{
 	
 }
 
@@ -163,31 +174,20 @@ unordered_map<char, unsigned> ReadSourceFile(string filename) {
 
 }
 
-
-
 // Driver program to test above functions
 int main()
 {
 	string source_file = "alice.txt";
 	string decode_file = "alice_decode.binary";
-	
+	string resource_file = "alice_reconstruct.binary";
+
     unordered_map<char, unsigned>  m = ReadSourceFile(source_file);
-
-//    cout << m.size() << endl;
-//    for (auto& e : m) {
-//        cout << e.first << ":" << e.second << endl;
-//    }
-
-//    char arr[] = { 'a', 'b', 'c', 'd', 'e', 'f' };
-//    int freq[] = { 5, 9, 12, 13, 16, 45 };
-//    int size = sizeof(arr) / sizeof(arr[0]);
-//    HuffmanCodes(arr, freq, size);
 
     HuffmanCodes(m);
 	
-	convertStrToBin(m, source_file, decode_file);
+	convertStrToBin(source_file, decode_file);
 	
-	convertBinToStr(m, source_file, decode_file);
+	//convertBinToStr(m, re_source_file, decode_file);
 
     return 0;
 }
