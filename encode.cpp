@@ -15,6 +15,7 @@
 #include <fstream>
 #include <queue>
 #include <unordered_map>
+#include <bitset>
 
 using namespace std;
 unordered_map<char, string> codes;
@@ -116,39 +117,64 @@ void HuffmanCodes(unordered_map<char, unsigned>& m)
 	storeCodes(minHeap.top(), "");
 }
 
-
 void convertStrToBin(string source_file, string decode_file)
 {
 	ifstream codestream(source_file);
 	
 	ofstream decodestream;
 	
-	decodestream = ofstream(decode_file, ios::out ); //| ios::binary
+	decodestream = ofstream(decode_file, ios::out | ios::binary); //
 	
     codestream >> noskipws; // read space?
 	
     char ch; 
 	string code;
 	string encoded_text;
-	
+	int counter = 0;
+			
     for (;;) {
 		
         codestream >> ch;
 		
+		counter++;
+		
         code = codes[ch];
 		
-		cout << ch << ": " << code << "\n";
+		//cout << ch << ": " << code << "\n";
 
 		encoded_text += code;
 	
         if (codestream.eof()) break;
       
     }
-
-	decodestream.write((char*)&encoded_text, sizeof(char)*encoded_text.size());
 	
-	cout << "Decode Finishes\n" << encoded_text << "\nsize:" << encoded_text.size();
+	int e_size = encoded_text.size();
 
+	const int l_size = sizeof(unsigned long)*8; //8 bits
+
+	cout << "Decode Finishes.\n" << l_size << "\n" ;
+	
+	string sub_str;
+	
+	for (int i=0;i<e_size;i+=l_size) {
+		
+		sub_str = encoded_text.substr(i, l_size);
+		
+		//cout << i << "i: " << sub_str << "size" << l_size << "\n";
+		
+		std::bitset<l_size> b_sets(sub_str);
+			
+		unsigned long n = b_sets.to_ulong() ;
+		
+		//cout << i << "i: " << b_sets << "\n";
+	
+		decodestream.write(reinterpret_cast<const char*>(&n), sizeof(n)) ;
+		//decodestream.write((char*)&n, sizeof(unsigned long));
+		
+    }
+	
+	//decodestream.write((char*)&encoded_text, sizeof(char)*encoded_text.size());
+	
 	decodestream.close();
 	
 }
