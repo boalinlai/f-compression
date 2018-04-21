@@ -3,4 +3,7 @@ project(f_compression)
 
 set(CMAKE_CXX_STANDARD 11)
 
-add_executable(encode encode.cpp)
+find_package (Threads)
+
+add_executable("f-compression" encode.cpp)
+target_link_libraries ("f-compression" ${CMAKE_THREAD_LIBS_INIT})
