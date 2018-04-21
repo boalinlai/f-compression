@@ -14,10 +14,11 @@
 #include <iostream>
 #include <fstream>
 #include <queue>
-#include <unordered_map>
+#include <map>
 
 using namespace std;
-unordered_map<char, string> codes;
+map<char, string> codes;  // a map that stores character : Huffman code pair
+map<char, int> freq;  // a map that stores character : frequency pair
 
 // A Huffman tree node
 struct MinHeapNode {
@@ -74,15 +75,15 @@ void storeCodes(struct MinHeapNode* root, string str)
     storeCodes(root->right, str + "1");
 }
 
-void HuffmanCodes(unordered_map<char, unsigned>& m)
+// Create a min heap & inserts all characters of data[]
+priority_queue<MinHeapNode*, vector<MinHeapNode*>, compare> minHeap;
+
+void HuffmanCodes()
 {
     struct MinHeapNode *left, *right, *top;
 
-    // Create a min heap & inserts all characters of data[]
-    priority_queue<MinHeapNode*, vector<MinHeapNode*>, compare> minHeap;
-
-    for (auto & e : m)
-        minHeap.push(new MinHeapNode(e.first, e.second));
+    for (auto v = freq.begin(); v!=freq.end(); v++)
+        minHeap.push(new MinHeapNode(v->first, v->second));
 
     // Iterate while size of heap doesn't become 1
     while (minHeap.size() != 1) {
@@ -116,6 +117,31 @@ void HuffmanCodes(unordered_map<char, unsigned>& m)
 	storeCodes(minHeap.top(), "");
 }
 
+// function iterates through the encoded string s
+// if s[i]=='1' then move to node->right
+// if s[i]=='0' then move to node->left
+// if leaf node append the node->data to our output string
+string decodefile(struct MinHeapNode* root, string s)
+{
+    string ans = "";
+    struct MinHeapNode* curr = root;
+    for (int i=0;i<s.size();i++)
+    {
+        if (s[i] == '0')
+            curr = curr->left;
+        else
+            curr = curr->right;
+
+        // reached leaf node
+        if (curr->left==NULL and curr->right==NULL)
+        {
+            ans += curr->data;
+            curr = root;
+        }
+    }
+
+    return ans;
+}
 
 void convertStrToBin(string source_file, string decode_file)
 {
@@ -153,9 +179,9 @@ void convertStrToBin(string source_file, string decode_file)
 	
 }
 
-unordered_map<char, unsigned> ReadSourceFile(string filename) {
+void ReadSourceFile(string filename) {
 
-    unordered_map<char, unsigned> m;
+    // map<char, unsigned> m;
 
     ifstream codestream(filename);
 
@@ -167,29 +193,55 @@ unordered_map<char, unsigned> ReadSourceFile(string filename) {
     char ch; // a character
     for (;;) {
         codestream >> ch;
-        if (codestream.eof()) return m;
-        m[ch] += 1;
+        if (codestream.eof()) return;
+        freq[ch] += 1;
         //cout << ch << endl;
     }
-
 }
+
+string buildEncodedStr(string filename) {
+    ifstream codestream(filename);
+
+    if (!codestream.is_open()) {
+        cout << "Cannot open code file.\n";
+        exit(1);
+    }
+    codestream >> noskipws;
+    char ch;
+    string encodedMsg;
+    while (!codestream.eof()) {
+        codestream >> ch;
+        encodedMsg += codes[ch];
+    }
+    return encodedMsg;
+}
+
 
 // Driver program to test above functions
 int main()
 {
 	string source_file = "alice.txt";
-	string decode_file = "alice_decode.binary";
-	string resource_file = "alice_reconstruct.binary";
+	string decode_file = "alice_decode.txt";
+	// string resource_file = "alice_reconstruct.binary";
 
-    unordered_map<char, unsigned>  m = ReadSourceFile(source_file);
+    ReadSourceFile(source_file);  // frequency map is built
 
-    HuffmanCodes(m);
-	
-	convertStrToBin(source_file, decode_file);
-	
+    HuffmanCodes();  // codes map is built
+
+    // string inputMsg = "aaddo";
+    // string outputMsg = decodefile(minHeap.top(), inputMsg);
+    string encodedStr = buildEncodedStr(source_file);
+    // cout << "The decoded message is " << outputMsg << endl;
+    string decodedStr = decodefile(minHeap.top(), encodedStr);
+	ofstream out("DecodedMessage.txt");
+    out << decodedStr;
+    out.close();
+	// convertStrToBin(source_file, decode_file);
+
 	//convertBinToStr(m, re_source_file, decode_file);
 
     return 0;
 }
+
 
 // This code is contributed by Aditya Goel, Refactored with STL + stream by Boa-Lin
