@@ -118,7 +118,7 @@ void HuffmanCodes(unordered_map<char, unsigned>& m)
 	storeCodes(minHeap.top(), "");
 }
 
-void writeBinThread(string encoded_text, string decode_file, int thread_id){
+void writeBinThread(string & encoded_text, string decode_file, int thread_id){
 	
 	ofstream decodestream;
 	
@@ -182,15 +182,15 @@ void convertStrToBin(string source_file, string decode_file)
 	
 	cout << "Decode Finishes.\n";
 	
-	thread t1(writeBinThread, encoded_text, decode_file, 0);
-	thread t2(writeBinThread, encoded_text, decode_file, 1);
-	thread t3(writeBinThread, encoded_text, decode_file, 2);
-	thread t4(writeBinThread, encoded_text, decode_file, 3);
-
-	t1.join();
-	t2.join();
-	t3.join();
-	t4.join();
+	thread myThreads[4];
+	
+	for (int i=0; i<4; i++){
+        thread t1(writeBinThread, encoded_text, decode_file, i);
+    }
+	
+	for (int i=0; i<4; i++){
+        myThreads[i].join();
+    }
 
 }
 
