@@ -19,8 +19,8 @@
 #include <thread>
 
 using namespace std;
-map<char, string> codes;  // a map that stores character : Huffman code pair
-map<char, int> freq;  // a map that stores character : frequency pair
+unordered_map<char, string> codes;  // a map that stores character : Huffman code pair
+unordered_map<char, int> freq;  // a map that stores character : frequency pair
 
 // A Huffman tree node
 struct MinHeapNode {
@@ -146,21 +146,54 @@ string decodefile(struct MinHeapNode* root, string s)
     return ans;
 }
 
-void writeBinThread(string encoded_text, string decode_file, int thread_id){
+void writeBinThread(string source_file, string decode_file, int thread_id, int thread_no){
+	
+	ifstream codestream(source_file);
+			
+    codestream >> noskipws; // read space?
+		
+	codestream.seekg(0, codestream.end);
+    int f_size = codestream.tellg();
+	codestream.seekg(0, codestream.beg);
+	
+	cout << thread_id << ": f_size: " << f_size << "\n";
+	
+	codestream.seekg(thread_id*f_size/thread_no, codestream.beg);
+	
+    char ch; 
+	string code;
+	string bin_encoded_text;
+	int counter = 0;
+			
+    for (;;) {
+		
+        codestream >> ch;
+		
+		counter++;
+		
+        code = codes[ch];
+		
+		//cout << ch << ": " << code << "\n";
+
+		bin_encoded_text += code;
+	
+        if (counter>=f_size/thread_no) break;
+      
+    }
 
 	ofstream decodestream;
 	
-	decodestream = ofstream(to_string(thread_id)+decode_file, ios::out | ios::binary); //
+	decodestream = ofstream(decode_file+to_string(thread_id), ios::out | ios::binary); 
 	
-	int e_size = encoded_text.size();
+	int e_size = bin_encoded_text.size();
 
 	const int l_size = sizeof(unsigned long)*8; //8 bits
 	
 	string sub_str;
 	
-	for (int i=thread_id*e_size/4;i<(thread_id+1)*e_size/4;i+=l_size) {
+	for (int i=0;i<e_size;i+=l_size) {
 		
-		sub_str = encoded_text.substr(i, l_size);
+		sub_str = bin_encoded_text.substr(i, l_size);
 		
 		//cout << i << "i: " << sub_str << "size" << l_size << "\n";
 		
@@ -175,7 +208,7 @@ void writeBinThread(string encoded_text, string decode_file, int thread_id){
 		
     }
 	
-	//decodestream.write((char*)&encoded_text, sizeof(char)*encoded_text.size());
+	//decodestream.write((char*)&bin_encoded_text, sizeof(char)*bin_encoded_text.size());
 	
 	decodestream.close();
 
@@ -183,42 +216,20 @@ void writeBinThread(string encoded_text, string decode_file, int thread_id){
 
 void convertStrToBin(string source_file, string decode_file)
 {
-	ifstream codestream(source_file);
-		
-    codestream >> noskipws; // read space?
 	
-    char ch; 
-	string code;
-	string encoded_text;
-	int counter = 0;
-			
-    for (;;) {
-		
-        codestream >> ch;
-		
-		counter++;
-		
-        code = codes[ch];
-		
-		//cout << ch << ": " << code << "\n";
-
-		encoded_text += code;
+	int n = 4;
 	
-        if (codestream.eof()) break;
-      
+	thread myThreads[n];
+	
+	for (int i=0; i<n; i++){
+        myThreads[i] = thread(writeBinThread, source_file, decode_file, i, n);
+    }
+	
+	for (int i=0; i<n; i++){
+        myThreads[i].join();
     }
 	
 	cout << "Decode Finishes.\n";
-	
-	thread myThreads[4];
-	
-	for (int i=0; i<4; i++){
-        thread t1(writeBinThread, encoded_text, decode_file, i);
-    }
-	
-	for (int i=0; i<4; i++){
-        myThreads[i].join();
-    }
 
 }
 
@@ -279,7 +290,8 @@ int main()
 	ofstream out("DecodedMessage.txt");
     out << decodedStr;
     out.close();
-	// convertStrToBin(source_file, decode_file);
+	
+	convertStrToBin(source_file, decode_file);
 
 	//convertBinToStr(m, re_source_file, decode_file);
 
