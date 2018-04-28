@@ -123,7 +123,7 @@ void HuffmanCodes()
 // function iterates through the encoded string s
 // if s[i]=='1' then move to node->right
 // if s[i]=='0' then move to node->left
-// if leaf node append the node->data to our output string
+// if leaf node, append the node->data to our output string
 string decodefile(struct MinHeapNode* root, string s)
 {
     string ans = "";
@@ -235,21 +235,18 @@ void convertStrToBin(string source_file, string decode_file)
 
 void ReadSourceFile(string filename) {
 
-    // map<char, unsigned> m;
-
     ifstream codestream(filename);
 
     if (!codestream.is_open()) {
-        cout << "Cannot open code file.\n";
+        cout << "Error: cannot open " << filename << endl;
         exit(1);
     }
     codestream >> noskipws; // read space?
     char ch; // a character
-    for (;;) {
+    for (;;) {  /* Create frequency map by reading character by character */
         codestream >> ch;
         if (codestream.eof()) return;
         freq[ch] += 1;
-        //cout << ch << endl;
     }
 }
 
@@ -257,7 +254,7 @@ string buildEncodedStr(string filename) {
     ifstream codestream(filename);
 
     if (!codestream.is_open()) {
-        cout << "Cannot open code file.\n";
+        cout << "Error: cannot open " << filename << endl;
         exit(1);
     }
     codestream >> noskipws;
