@@ -11,57 +11,8 @@ using namespace std;
 using json = nlohmann::json;
 
 
-Huffman::Huffman(string fn):filename(fn)
+Huffman::Huffman(string fn):filename(fn), num_of_cpus(getCPUNo())
 {
-	//read code
-    ifstream codestream(filename);
-
-    if (!codestream.is_open()) {
-        cout << "Error: cannot open " << filename << endl;
-        exit(1);
-    }
-    codestream >> noskipws; // read space?
-    char ch; // a character
-    for (;;) {  /* Create frequency map by reading character by character */
-        codestream >> ch;
-        if (codestream.eof()) break;
-        freq[ch] += 1;
-    }
-	
-	//construct table
-	struct MinHeapNode *left, *right, *top;
-
-    for (auto v = freq.begin(); v!=freq.end(); v++)
-        minHeap.push(new MinHeapNode(v->first, v->second));
-
-    // Iterate while size of heap doesn't become 1
-    while (minHeap.size() != 1) {
-
-        // Extract the two minimum
-        // freq items from min heap
-        left = minHeap.top();
-        minHeap.pop();
-
-        right = minHeap.top();
-        minHeap.pop();
-
-        // Create a new internal node with
-        // frequency equal to the sum of the
-        // two nodes frequencies. Make the
-        // two extracted node as left and right children
-        // of this new node. Add this node
-        // to the min heap '$' is a special value
-        // for internal nodes, not used
-        top = new MinHeapNode('$', left->freq + right->freq);
-
-        top->left = left;
-        top->right = right;
-
-        minHeap.push(top);
-    }
-	
-	//store code
-	storeCodes(minHeap.top(), "");
 
 }
 
@@ -118,7 +69,8 @@ void Huffman::writeBinThread(int thread_id, int thread_no){
     }
 	
 	//checksum after encode
-	check[thread_id] = str_hash(bin_encoded_text);
+    unsigned long long encodeChecksum[num_of_cpus];
+	encodeChecksum[thread_id] = str_hash(bin_encoded_text);
 	//cout << thread_id << ": checksum: " << check[thread_id] << "\n";
 	
 	ofstream encodestream;
@@ -152,6 +104,56 @@ void Huffman::writeBinThread(int thread_id, int thread_no){
 
 void Huffman::encode()
 {
+    //read code
+    ifstream codestream(filename);
+
+    if (!codestream.is_open()) {
+        cout << "Error: cannot open " << filename << endl;
+        exit(1);
+    }
+    codestream >> noskipws; // read space?
+    char ch; // a character
+    for (;;) {  /* Create frequency map by reading character by character */
+        codestream >> ch;
+        if (codestream.eof()) break;
+        freq[ch] += 1;
+    }
+
+    //construct table
+    struct MinHeapNode *left, *right, *top;
+
+    for (auto v = freq.begin(); v!=freq.end(); v++)
+        minHeap.push(new MinHeapNode(v->first, v->second));
+
+    // Iterate while size of heap doesn't become 1
+    while (minHeap.size() != 1) {
+
+        // Extract the two minimum
+        // freq items from min heap
+        left = minHeap.top();
+        minHeap.pop();
+
+        right = minHeap.top();
+        minHeap.pop();
+
+        // Create a new internal node with
+        // frequency equal to the sum of the
+        // two nodes frequencies. Make the
+        // two extracted node as left and right children
+        // of this new node. Add this node
+        // to the min heap '$' is a special value
+        // for internal nodes, not used
+        top = new MinHeapNode('$', left->freq + right->freq);
+
+        top->left = left;
+        top->right = right;
+
+        minHeap.push(top);
+    }
+
+    //store code
+    storeCodes(minHeap.top(), "");
+
 	
 	int n = getCPUNo();
 	
@@ -171,6 +173,8 @@ void Huffman::encode()
 
 
 void Huffman::readBinThread(int thread_id, int thread_no){
+    unsigned long long decodeChecksum[num_of_cpus];
+
 
 	string encoded_file = filename+"en";
 	string decoded_file = filename+"de"; 
@@ -186,7 +190,7 @@ void Huffman::readBinThread(int thread_id, int thread_no){
 	string encoded_text = ostrm.str();	
 	
 	//checksum before decode
-	check[thread_id] = str_hash(encoded_text);
+	decodeChecksum[thread_id] = str_hash(encoded_text);
 	
 	string decoded_text = decodeBin(minHeap.top(), encoded_text);
 	

@@ -1,3 +1,11 @@
+#include "Huffman.h"
+#include <string>
+#include <iostream>
+#include <fstream>
+
+using namespace std;
+
+
 // A helper function to check if the file exists
 bool file_exist(const char* filename) {
     ifstream myfile(filename);
@@ -47,22 +55,24 @@ int main()
                 filename.append(".txt");
             }
         }
-        switch(action) {
-            case 'e':
-                /* fill in function */
 
-                cout << "You pressed " << action << endl;
+        Huffman huffman(filename);
+
+
+        switch (action) {
+            case encode:
+                huffman.encode();
+                // cout << "You pressed " << action << endl;
+                cout << "Encode complete..." << endl;
                 break;
-            case 'd':
-                /* fill in function */
-                
-                cout << "You pressed " << action << endl;
+            case decode:
+                huffman.decode();
+                cout << "Decode complete..." << endl;
+                //cout << "You pressed " << action << endl;
                 break;
             default:
                 cout << "You pressed " << action << endl;
         }
-
     }
-
     return 0;
 }

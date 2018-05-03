@@ -1,6 +1,7 @@
 #include <unordered_map>
 #include <queue>
 #include <string>
+#include <thread>
 
 using namespace std;
 
@@ -39,6 +40,7 @@ class Huffman
 
 		priority_queue<MinHeapNode*, vector<MinHeapNode*>, compare> minHeap;
 		string filename;
+		int num_of_cpus;
 		
 	public:
 
@@ -55,11 +57,10 @@ class Huffman
 		void decode();
 		string decodeBin(struct MinHeapNode* root, string s);
 		void concatFiles();		
-		
-		unsigned long long check[4];
+
+		// int cpuNo = thread::hardware_concurrency();
+
 		std::hash<std::string> str_hash;
 		
 		int getCPUNo();
-		
-	
 };
