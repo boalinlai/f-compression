@@ -1,4 +1,5 @@
 #include <unordered_map>
+#include <map>
 #include <queue>
 #include <string>
 #include <thread>
@@ -44,10 +45,11 @@ class Huffman
 		
 	public:
 
-		unordered_map<char, string> codes;  // a map that stores character : Huffman code pair
-		std::unordered_map<char, int> freq;
+		map<char, string> codes;  // a map that stores character : Huffman code pair
+		map<char, int> freq;
 	
-		Huffman(string filename);	
+		Huffman(string filename);
+		void printCodes(struct MinHeapNode* root, string str);
 		void storeCodes(struct MinHeapNode* root, string str);
 		
 		void writeBinThread(int thread_id, int thread_no);
@@ -60,7 +62,7 @@ class Huffman
         void constructHeap();
 		// int cpuNo = thread::hardware_concurrency();
 
-		std::hash<std::string> str_hash;
+		hash<string> str_hash;
 		
 		int getCPUNo();
 };
