@@ -138,14 +138,10 @@ void Huffman::writeBinThread(int thread_id, int thread_no){
 		//cout << i << "i: " << b_sets << "\n";
 	
 		encodestream.write(reinterpret_cast<const char*>(&n), sizeof(n)) ;
-		//encodestream.write((char*)&n, sizeof(unsigned long));
 		
     }
 	
-	//encodestream.write((char*)&bin_encoded_text, sizeof(char)*bin_encoded_text.size());
-	
 	encodestream.close();
-
 }
 
 void Huffman::encode()
@@ -241,14 +237,14 @@ int Huffman::getCPUNo()
 	return thread::hardware_concurrency();	
 }
 
-int main(){
+/*int main(){
 	Huffman huff("alice.txt");
 	huff.encode();
 	
 	json j_umap(huff.codes);
 	cout << "Dumped: " << j_umap.dump(4) << "\n";
 	
-	/*
+
 	unordered_map<char, string>::iterator it;
 	for (it = huff.codes.begin(); it != huff.codes.end(); it++ )
 	{
@@ -256,6 +252,6 @@ int main(){
 				  << ':'
 				  << it->second   // string's value 
 				  << endl ;
-	}*/
+	}
 	
-}
+}*/
