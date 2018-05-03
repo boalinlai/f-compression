@@ -4,10 +4,12 @@
 #include <fstream>
 #include <bitset>
 #include <thread>
+#include <functional>
 #include "nlohmann/json.hpp"
 
 using namespace std;
 using json = nlohmann::json;
+
 
 Huffman::Huffman(string fn):filename(fn)
 {
@@ -114,7 +116,11 @@ void Huffman::writeBinThread(int thread_id, int thread_no){
         if (counter>=f_size/thread_no) break;
       
     }
-
+	
+	//checksum after encode
+	check[thread_id] = str_hash(bin_encoded_text);
+	//cout << thread_id << ": checksum: " << check[thread_id] << "\n";
+	
 	ofstream encodestream;
 	
 	encodestream = ofstream(encoded_file+to_string(thread_id), ios::out | ios::binary); 
@@ -178,6 +184,10 @@ void Huffman::readBinThread(int thread_id, int thread_no){
 	ostrm << codestream.rdbuf();
 		
 	string encoded_text = ostrm.str();	
+	
+	//checksum before decode
+	check[thread_id] = str_hash(encoded_text);
+	
 	string decoded_text = decodeBin(minHeap.top(), encoded_text);
 	
 	ofstream decodestream;

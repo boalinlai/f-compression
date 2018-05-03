@@ -56,6 +56,9 @@ class Huffman
 		string decodeBin(struct MinHeapNode* root, string s);
 		void concatFiles();		
 		
+		unsigned long long check[4];
+		std::hash<std::string> str_hash;
+		
 		int getCPUNo();
 		
 	
