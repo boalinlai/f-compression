@@ -116,7 +116,7 @@ void Huffman::writeBinThread(int thread_id, int thread_no){
       
     }
 
-	cout << "Binary Encoded String in en stage = " << bin_encoded_text << endl ;
+	//cout << "Binary Encoded String in en stage = " << bin_encoded_text << endl ;
 	
     unsigned long long checksum = str_hash(bin_encoded_text);
 
@@ -249,7 +249,7 @@ void Huffman::readBinThread(int thread_id, int thread_no) {
 	}
 
 	bin_encoded_text = bin_encoded_text.substr(0,size);
-	cout << "Binary Encoded String in de stage = " << bin_encoded_text << endl ;
+	//cout << "Binary Encoded String in de stage = " << bin_encoded_text << endl ;
 	
 	assert(checksum == str_hash(bin_encoded_text));
 	//checksum before decode
