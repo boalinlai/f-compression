@@ -4,12 +4,13 @@
 #include <fstream>
 #include <bitset>
 #include <thread>
+#include "nlohmann/json.hpp"
 
 using namespace std;
+using json = nlohmann::json;
 
-Huffman::Huffman(string filename)
+Huffman::Huffman(string fn):filename(fn)
 {
-	
 	//read code
     ifstream codestream(filename);
 
@@ -21,7 +22,7 @@ Huffman::Huffman(string filename)
     char ch; // a character
     for (;;) {  /* Create frequency map by reading character by character */
         codestream >> ch;
-        if (codestream.eof()) return;
+        if (codestream.eof()) break;
         freq[ch] += 1;
     }
 	
@@ -59,7 +60,7 @@ Huffman::Huffman(string filename)
 	
 	//store code
 	storeCodes(minHeap.top(), "");
-	
+
 }
 
 void Huffman::storeCodes(struct MinHeapNode* root, string str)
@@ -67,14 +68,19 @@ void Huffman::storeCodes(struct MinHeapNode* root, string str)
     if (root==NULL)
         return;
 	
+	cout << root->data << str << endl;
+	
     if (root->data != '$')
-        codes[root->data]=str;
+        codes[root->data]=string(str);
     storeCodes(root->left, str + "0");
     storeCodes(root->right, str + "1");
+
 }
 
-
-void Huffman::writeBinThread(string source_file, string encoded_file, int thread_id, int thread_no){
+void Huffman::writeBinThread(int thread_id, int thread_no){
+	
+	string source_file = filename;
+	string encoded_file = filename+"en";
 	
 	ifstream codestream(source_file);
 			
@@ -109,9 +115,9 @@ void Huffman::writeBinThread(string source_file, string encoded_file, int thread
       
     }
 
-	ofstream decodestream;
+	ofstream encodestream;
 	
-	decodestream = ofstream(encoded_file+to_string(thread_id), ios::out | ios::binary); 
+	encodestream = ofstream(encoded_file+to_string(thread_id), ios::out | ios::binary); 
 	
 	int e_size = bin_encoded_text.size();
 
@@ -131,18 +137,18 @@ void Huffman::writeBinThread(string source_file, string encoded_file, int thread
 		
 		//cout << i << "i: " << b_sets << "\n";
 	
-		decodestream.write(reinterpret_cast<const char*>(&n), sizeof(n)) ;
-		//decodestream.write((char*)&n, sizeof(unsigned long));
+		encodestream.write(reinterpret_cast<const char*>(&n), sizeof(n)) ;
+		//encodestream.write((char*)&n, sizeof(unsigned long));
 		
     }
 	
-	//decodestream.write((char*)&bin_encoded_text, sizeof(char)*bin_encoded_text.size());
+	//encodestream.write((char*)&bin_encoded_text, sizeof(char)*bin_encoded_text.size());
 	
-	decodestream.close();
+	encodestream.close();
 
 }
 
-void Huffman::encode(string source_file, string encoded_file)
+void Huffman::encode()
 {
 	
 	int n = getCPUNo();
@@ -150,7 +156,7 @@ void Huffman::encode(string source_file, string encoded_file)
 	thread myThreads[n];
 	
 	for (int i=0; i<n; i++){
-        myThreads[i] = thread(&Huffman::writeBinThread, this, source_file, encoded_file, i, n);
+        myThreads[i] = thread(&Huffman::writeBinThread, this, i, n);
     }
 	
 	for (int i=0; i<n; i++){
@@ -162,7 +168,10 @@ void Huffman::encode(string source_file, string encoded_file)
 }
 
 
-void Huffman::readBinThread(string encoded_file, string decoded_file, int thread_id, int thread_no){
+void Huffman::readBinThread(int thread_id, int thread_no){
+
+	string encoded_file = filename+"en";
+	string decoded_file = filename+"de"; 
 
 	cout << thread_id << "\n";
 
@@ -173,25 +182,24 @@ void Huffman::readBinThread(string encoded_file, string decoded_file, int thread
 	ostrm << codestream.rdbuf();
 		
 	string encoded_text = ostrm.str();	
-	
-	decodedStr = decodeBin(minHeap.top(), encoded_text);
+	string decoded_text = decodeBin(minHeap.top(), encoded_text);
 	
 	ofstream decodestream;
 	
 	decodestream = ofstream(decoded_file+to_string(thread_id), ios::out); 
-	decodestream.write(decodedStr);
-	decodestream.close()
+	decodestream.write((char *)&decoded_text, sizeof(string));
+	decodestream.close();
 	
 }
 
-void Huffman::decode(string encoded_file, string decoded_file){
+void Huffman::decode(){
 	
 	int n = getCPUNo();
 	
 	thread myThreads[n];
 	
 	for (int i=0; i<n; i++){
-        myThreads[i] = thread(&Huffman::writeBinThread, this, encoded_file, string decoded_file, i, n);
+        myThreads[i] = thread(&Huffman::readBinThread, this, i, n);
     }
 	
 	for (int i=0; i<n; i++){
@@ -201,11 +209,53 @@ void Huffman::decode(string encoded_file, string decoded_file){
 	cout << "Decode Finishes.\n";	
 }
 
-void Huffman::concatFiles(string encoded_file_part){
+string Huffman::decodeBin(struct MinHeapNode* root, string s){
+	   
+	string ans = "";
+    struct MinHeapNode* curr = root;
+    for (int i=0;i<s.size();i++)
+    {
+        if (s[i] == '0')
+            curr = curr->left;
+        else
+            curr = curr->right;
+
+        // reached leaf node
+        if (curr->left==NULL and curr->right==NULL)
+        {
+            ans += curr->data;
+            curr = root;
+        }
+    }
+
+    return ans;
+	
+}
+
+void Huffman::concatFiles(){
 	//use linux command here?
 }
 
 int Huffman::getCPUNo()
 {
 	return thread::hardware_concurrency();	
+}
+
+int main(){
+	Huffman huff("alice.txt");
+	huff.encode();
+	
+	json j_umap(huff.codes);
+	cout << "Dumped: " << j_umap.dump(4) << "\n";
+	
+	/*
+	unordered_map<char, string>::iterator it;
+	for (it = huff.codes.begin(); it != huff.codes.end(); it++ )
+	{
+		cout << it->first  // string (key)
+				  << ':'
+				  << it->second   // string's value 
+				  << endl ;
+	}*/
+	
 }

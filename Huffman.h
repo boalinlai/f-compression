@@ -36,23 +36,25 @@ class Huffman
 			}
 		};
 	
-		unordered_map<char, string> codes;  // a map that stores character : Huffman code pair
-		unordered_map<char, int> freq;  
+
 		priority_queue<MinHeapNode*, vector<MinHeapNode*>, compare> minHeap;
-		
+		string filename;
 		
 	public:
+
+		unordered_map<char, string> codes;  // a map that stores character : Huffman code pair
+		unordered_map<char, int> freq;  
 	
 		Huffman(string filename);	
 		void storeCodes(struct MinHeapNode* root, string str);
 		
-		void writeBinThread(string source_file, string encoded_file, int thread_id, int thread_no);
-		void encode(string source_file, string encoded_file);
+		void writeBinThread(int thread_id, int thread_no);
+		void encode();
 
-		void readBinThread(string encoded_file, string decoded_file, int thread_id, int thread_no);
-		void decode(string encoded_file, string decoded_file);
+		void readBinThread(int thread_id, int thread_no);
+		void decode();
 		string decodeBin(struct MinHeapNode* root, string s);
-		void concatFiles(string encoded_file_part);		
+		void concatFiles();		
 		
 		int getCPUNo();
 		
