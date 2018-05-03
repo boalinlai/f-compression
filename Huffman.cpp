@@ -282,8 +282,7 @@ void Huffman::decode(){
 	// (auto it : freq) 
 		//cout << " " << it.first << ":" << it.second;
 	printCodes(minHeap.top(), "");
-	
-	
+		
 	thread myThreads[n];
 	
 	for (int i=0; i<n; i++){
@@ -294,7 +293,10 @@ void Huffman::decode(){
         myThreads[i].join();
     }
 	
-	cout << "Decode Finishes.\n";	
+	cout << "Decode Finishes.\n";
+
+	concatFiles();
+	
 }
 
 string Huffman::decodeBin(struct MinHeapNode* root, string s){
@@ -323,6 +325,18 @@ string Huffman::decodeBin(struct MinHeapNode* root, string s){
 
 void Huffman::concatFiles(){
 	//use linux command here?
+	
+	int n = getCPUNo();
+	ofstream combined_file(filename+"_decoded.txt");
+		
+	for(int i=0;i<n;i++)
+    {
+		string decoded_file = filename + "_de_" + to_string(i);
+		ifstream file(decoded_file);
+		combined_file << file.rdbuf();
+	}
+	combined_file.close();
+	
 }
 
 int Huffman::getCPUNo()
