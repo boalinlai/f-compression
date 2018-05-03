@@ -45,7 +45,7 @@ class Huffman
 	public:
 
 		unordered_map<char, string> codes;  // a map that stores character : Huffman code pair
-		unordered_map<char, int> freq;  
+		std::unordered_map<char, int> freq;
 	
 		Huffman(string filename);	
 		void storeCodes(struct MinHeapNode* root, string str);
@@ -57,7 +57,7 @@ class Huffman
 		void decode();
 		string decodeBin(struct MinHeapNode* root, string s);
 		void concatFiles();		
-
+        void constructHeap();
 		// int cpuNo = thread::hardware_concurrency();
 
 		std::hash<std::string> str_hash;

@@ -43,17 +43,17 @@ int main()
 
         cout << "Enter the text filename (press space will default to alice.txt)" << endl;
         cin >> filename;
-        string suffix = ".txt";
-        if (!has_suffix(filename, suffix)) {
-            filename.append(".txt");
-        }
+//        string suffix = ".txt";
+//        if (!has_suffix(filename, suffix)) {
+//            filename.append(".txt");
+//        }
 
-        while (!file_exist(filename.c_str())) {
+        while (!file_exist((filename + ".txt").c_str())) {
             cout << filename << " does not exist. Please re-enter: ";
             cin >> filename;
-            if (!has_suffix(filename, suffix)) {
-                filename.append(".txt");
-            }
+//            if (!has_suffix(filename, suffix)) {
+//                filename.append(".txt");
+//            }
         }
 
         Huffman huffman(filename);
@@ -66,6 +66,7 @@ int main()
                 cout << "Encode complete..." << endl;
                 break;
             case decode:
+                cout << "Decode start..." << endl;
                 huffman.decode();
                 cout << "Decode complete..." << endl;
                 //cout << "You pressed " << action << endl;

@@ -32,8 +32,8 @@ void Huffman::storeCodes(struct MinHeapNode* root, string str)
 
 void Huffman::writeBinThread(int thread_id, int thread_no){
 	
-	string source_file = filename;
-	string encoded_file = filename+"en";
+	string source_file = filename + ".txt";
+	string encoded_file = filename + "_en_" +  to_string(thread_id);
 	
 	ifstream codestream(source_file);
 			
@@ -69,15 +69,31 @@ void Huffman::writeBinThread(int thread_id, int thread_no){
     }
 	
 	//checksum after encode
-    unsigned long long encodeChecksum[num_of_cpus];
-	encodeChecksum[thread_id] = str_hash(bin_encoded_text);
+    //unsigned long long encodeChecksum[num_of_cpus];
+
+    unsigned long long checksum = str_hash(bin_encoded_text);
+    cout << checksum << endl;
+
 	//cout << thread_id << ": checksum: " << check[thread_id] << "\n";
 	
 	ofstream encodestream;
 	
-	encodestream = ofstream(encoded_file+to_string(thread_id), ios::out | ios::binary); 
-	
-	int e_size = bin_encoded_text.size();
+	encodestream = ofstream(encoded_file, ios::out | ios::binary);
+
+    unsigned long long e_size = bin_encoded_text.size();
+
+
+
+
+    json thread_json;
+
+    thread_json["checksum"]  = checksum;
+    thread_json["size"] = e_size;
+
+    std::ofstream o(encoded_file + ".json");
+    o << std::setw(4) << thread_json << std::endl;
+
+    // store checksum, e size into json
 
 	const int l_size = sizeof(unsigned long)*8; //8 bits
 	
@@ -98,28 +114,15 @@ void Huffman::writeBinThread(int thread_id, int thread_no){
 		encodestream.write(reinterpret_cast<const char*>(&n), sizeof(n)) ;
 		
     }
-	
+
+
 	encodestream.close();
 }
 
-void Huffman::encode()
+
+void Huffman::constructHeap()
 {
-    //read code
-    ifstream codestream(filename);
-
-    if (!codestream.is_open()) {
-        cout << "Error: cannot open " << filename << endl;
-        exit(1);
-    }
-    codestream >> noskipws; // read space?
-    char ch; // a character
-    for (;;) {  /* Create frequency map by reading character by character */
-        codestream >> ch;
-        if (codestream.eof()) break;
-        freq[ch] += 1;
-    }
-
-    //construct table
+    codes.clear();
     struct MinHeapNode *left, *right, *top;
 
     for (auto v = freq.begin(); v!=freq.end(); v++)
@@ -150,9 +153,64 @@ void Huffman::encode()
 
         minHeap.push(top);
     }
+    storeCodes(minHeap.top(), "");
+}
+
+
+
+void Huffman::encode()
+{
+    //read code
+    string source_file = filename + ".txt";
+
+
+    ifstream codestream(source_file);
+
+    if (!codestream.is_open()) {
+        cout << "Error: cannot open " << source_file << endl;
+        exit(1);
+    }
+    codestream >> noskipws; // read space?
+    char ch; // a character
+    for (;;) {  /* Create frequency map by reading character by character */
+        codestream >> ch;
+        if (codestream.eof()) break;
+        freq[ch] += 1;
+    }
+    constructHeap();
+    //construct table
+//    struct MinHeapNode *left, *right, *top;
+//
+//    for (auto v = freq.begin(); v!=freq.end(); v++)
+//        minHeap.push(new MinHeapNode(v->first, v->second));
+//
+//    // Iterate while size of heap doesn't become 1
+//    while (minHeap.size() != 1) {
+//
+//        // Extract the two minimum
+//        // freq items from min heap
+//        left = minHeap.top();
+//        minHeap.pop();
+//
+//        right = minHeap.top();
+//        minHeap.pop();
+//
+//        // Create a new internal node with
+//        // frequency equal to the sum of the
+//        // two nodes frequencies. Make the
+//        // two extracted node as left and right children
+//        // of this new node. Add this node
+//        // to the min heap '$' is a special value
+//        // for internal nodes, not used
+//        top = new MinHeapNode('$', left->freq + right->freq);
+//
+//        top->left = left;
+//        top->right = right;
+//
+//        minHeap.push(top);
+//    }
 
     //store code
-    storeCodes(minHeap.top(), "");
 
 	
 	int n = getCPUNo();
@@ -169,34 +227,53 @@ void Huffman::encode()
 	
 	cout << "Encode Finishes.\n";
 
+    json freq_map_json;
+
+    for(auto iter = freq.begin(); iter != freq.end(); ++iter) {
+        freq_map_json[to_string(iter->first)] = iter->second;
+    }
+
+
+    std::ofstream o(filename + ".json");
+    o << std::setw(4) << freq_map_json << std::endl;
+
+
 }
 
 
-void Huffman::readBinThread(int thread_id, int thread_no){
-    unsigned long long decodeChecksum[num_of_cpus];
+void Huffman::readBinThread(int thread_id, int thread_no) {
 
 
-	string encoded_file = filename+"en";
-	string decoded_file = filename+"de"; 
+    std::ifstream i(filename + "_en_" + to_string(thread_id) +  ".json");
+    json info_json;
+    i >> info_json;
+    unsigned long long checksum = info_json["checksum"].get<unsigned long long>();
+    unsigned long long size = info_json["size"].get<unsigned long long>();
+
+    cout << "checksume: " << checksum << endl;
+    cout << "size : " << size << endl;
+
+
+	string encoded_file = filename + "_en_" + to_string(thread_id);
+	string decoded_file = filename + "_de_" + to_string(thread_id);
 
 	cout << thread_id << "\n";
 
-	ifstream codestream(encoded_file+to_string(thread_id), ios::binary);
+	ifstream codestream(encoded_file, ios::binary);
 	ostringstream ostrm;
 			
     codestream >> noskipws; // read space?
 	ostrm << codestream.rdbuf();
 		
-	string encoded_text = ostrm.str();	
+	string encoded_text = ostrm.str();
 	
 	//checksum before decode
-	decodeChecksum[thread_id] = str_hash(encoded_text);
 	
 	string decoded_text = decodeBin(minHeap.top(), encoded_text);
-	
+
 	ofstream decodestream;
 	
-	decodestream = ofstream(decoded_file+to_string(thread_id), ios::out); 
+	decodestream = ofstream(decoded_file, ios::out);
 	decodestream.write((char *)&decoded_text, sizeof(string));
 	decodestream.close();
 	
@@ -205,7 +282,17 @@ void Huffman::readBinThread(int thread_id, int thread_no){
 void Huffman::decode(){
 	
 	int n = getCPUNo();
-	
+    // read a JSON file
+    std::ifstream i(filename + ".json");
+    json j;
+    i >> j;
+    freq.clear();
+//    freq = j.get< unordered_map <char, int> >();
+    for (json::iterator it = j.begin(); it != j.end(); ++it) {
+        freq[char(stoi(it.key()))] = it.value();
+    }
+    constructHeap();
+
 	thread myThreads[n];
 	
 	for (int i=0; i<n; i++){
@@ -220,7 +307,9 @@ void Huffman::decode(){
 }
 
 string Huffman::decodeBin(struct MinHeapNode* root, string s){
-	   
+
+
+
 	string ans = "";
     struct MinHeapNode* curr = root;
     for (int i=0;i<s.size();i++)
@@ -239,7 +328,7 @@ string Huffman::decodeBin(struct MinHeapNode* root, string s){
     }
 
     return ans;
-	
+
 }
 
 void Huffman::concatFiles(){

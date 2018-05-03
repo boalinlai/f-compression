@@ -39,19 +39,19 @@ cmake_force:
 SHELL = /bin/sh
 
 # The CMake executable.
-CMAKE_COMMAND = /Applications/CLion.app/Contents/bin/cmake/bin/cmake
+CMAKE_COMMAND = "/Users/boalinlai/Library/Application Support/JetBrains/Toolbox/apps/CLion/ch-0/173.4674.29/CLion.app/Contents/bin/cmake/bin/cmake"
 
 # The command to remove a file.
-RM = /Applications/CLion.app/Contents/bin/cmake/bin/cmake -E remove -f
+RM = "/Users/boalinlai/Library/Application Support/JetBrains/Toolbox/apps/CLion/ch-0/173.4674.29/CLion.app/Contents/bin/cmake/bin/cmake" -E remove -f
 
 # Escaping for special characters.
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = "/Users/harryzou/Documents/College/Gatech BS/Spring 2018/ECE 4122/Projects/Final Project/f-compression"
+CMAKE_SOURCE_DIR = /Users/boalinlai/Gatech/MS/Spring2018/APT/f-compression
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = "/Users/harryzou/Documents/College/Gatech BS/Spring 2018/ECE 4122/Projects/Final Project/f-compression"
+CMAKE_BINARY_DIR = /Users/boalinlai/Gatech/MS/Spring2018/APT/f-compression
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -59,7 +59,7 @@ CMAKE_BINARY_DIR = "/Users/harryzou/Documents/College/Gatech BS/Spring 2018/ECE 
 # Special rule for the target rebuild_cache
 rebuild_cache:
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "Running CMake to regenerate build system..."
-	/Applications/CLion.app/Contents/bin/cmake/bin/cmake -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
+	"/Users/boalinlai/Library/Application Support/JetBrains/Toolbox/apps/CLion/ch-0/173.4674.29/CLion.app/Contents/bin/cmake/bin/cmake" -H$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR)
 .PHONY : rebuild_cache
 
 # Special rule for the target rebuild_cache
@@ -70,7 +70,7 @@ rebuild_cache/fast: rebuild_cache
 # Special rule for the target edit_cache
 edit_cache:
 	@$(CMAKE_COMMAND) -E cmake_echo_color --switch=$(COLOR) --cyan "No interactive CMake dialog available..."
-	/Applications/CLion.app/Contents/bin/cmake/bin/cmake -E echo No\ interactive\ CMake\ dialog\ available.
+	"/Users/boalinlai/Library/Application Support/JetBrains/Toolbox/apps/CLion/ch-0/173.4674.29/CLion.app/Contents/bin/cmake/bin/cmake" -E echo No\ interactive\ CMake\ dialog\ available.
 .PHONY : edit_cache
 
 # Special rule for the target edit_cache
@@ -80,9 +80,9 @@ edit_cache/fast: edit_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start "/Users/harryzou/Documents/College/Gatech BS/Spring 2018/ECE 4122/Projects/Final Project/f-compression/CMakeFiles" "/Users/harryzou/Documents/College/Gatech BS/Spring 2018/ECE 4122/Projects/Final Project/f-compression/CMakeFiles/progress.marks"
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/boalinlai/Gatech/MS/Spring2018/APT/f-compression/CMakeFiles /Users/boalinlai/Gatech/MS/Spring2018/APT/f-compression/CMakeFiles/progress.marks
 	$(MAKE) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start "/Users/harryzou/Documents/College/Gatech BS/Spring 2018/ECE 4122/Projects/Final Project/f-compression/CMakeFiles" 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/boalinlai/Gatech/MS/Spring2018/APT/f-compression/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
@@ -111,44 +111,71 @@ depend:
 .PHONY : depend
 
 #=============================================================================
-# Target rules for targets named encode
+# Target rules for targets named f-compression
 
 # Build rule for target.
-encode: cmake_check_build_system
-	$(MAKE) -f CMakeFiles/Makefile2 encode
-.PHONY : encode
+f-compression: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 f-compression
+.PHONY : f-compression
 
 # fast build rule for target.
-encode/fast:
-	$(MAKE) -f CMakeFiles/encode.dir/build.make CMakeFiles/encode.dir/build
-.PHONY : encode/fast
+f-compression/fast:
+	$(MAKE) -f CMakeFiles/f-compression.dir/build.make CMakeFiles/f-compression.dir/build
+.PHONY : f-compression/fast
 
-encode.o: encode.cpp.o
+Huffman.o: Huffman.cpp.o
 
-.PHONY : encode.o
+.PHONY : Huffman.o
 
 # target to build an object file
-encode.cpp.o:
-	$(MAKE) -f CMakeFiles/encode.dir/build.make CMakeFiles/encode.dir/encode.cpp.o
-.PHONY : encode.cpp.o
+Huffman.cpp.o:
+	$(MAKE) -f CMakeFiles/f-compression.dir/build.make CMakeFiles/f-compression.dir/Huffman.cpp.o
+.PHONY : Huffman.cpp.o
 
-encode.i: encode.cpp.i
+Huffman.i: Huffman.cpp.i
 
-.PHONY : encode.i
+.PHONY : Huffman.i
 
 # target to preprocess a source file
-encode.cpp.i:
-	$(MAKE) -f CMakeFiles/encode.dir/build.make CMakeFiles/encode.dir/encode.cpp.i
-.PHONY : encode.cpp.i
+Huffman.cpp.i:
+	$(MAKE) -f CMakeFiles/f-compression.dir/build.make CMakeFiles/f-compression.dir/Huffman.cpp.i
+.PHONY : Huffman.cpp.i
 
-encode.s: encode.cpp.s
+Huffman.s: Huffman.cpp.s
 
-.PHONY : encode.s
+.PHONY : Huffman.s
 
 # target to generate assembly for a file
-encode.cpp.s:
-	$(MAKE) -f CMakeFiles/encode.dir/build.make CMakeFiles/encode.dir/encode.cpp.s
-.PHONY : encode.cpp.s
+Huffman.cpp.s:
+	$(MAKE) -f CMakeFiles/f-compression.dir/build.make CMakeFiles/f-compression.dir/Huffman.cpp.s
+.PHONY : Huffman.cpp.s
+
+main.o: main.cpp.o
+
+.PHONY : main.o
+
+# target to build an object file
+main.cpp.o:
+	$(MAKE) -f CMakeFiles/f-compression.dir/build.make CMakeFiles/f-compression.dir/main.cpp.o
+.PHONY : main.cpp.o
+
+main.i: main.cpp.i
+
+.PHONY : main.i
+
+# target to preprocess a source file
+main.cpp.i:
+	$(MAKE) -f CMakeFiles/f-compression.dir/build.make CMakeFiles/f-compression.dir/main.cpp.i
+.PHONY : main.cpp.i
+
+main.s: main.cpp.s
+
+.PHONY : main.s
+
+# target to generate assembly for a file
+main.cpp.s:
+	$(MAKE) -f CMakeFiles/f-compression.dir/build.make CMakeFiles/f-compression.dir/main.cpp.s
+.PHONY : main.cpp.s
 
 # Help Target
 help:
@@ -158,10 +185,13 @@ help:
 	@echo "... depend"
 	@echo "... rebuild_cache"
 	@echo "... edit_cache"
-	@echo "... encode"
-	@echo "... encode.o"
-	@echo "... encode.i"
-	@echo "... encode.s"
+	@echo "... f-compression"
+	@echo "... Huffman.o"
+	@echo "... Huffman.i"
+	@echo "... Huffman.s"
+	@echo "... main.o"
+	@echo "... main.i"
+	@echo "... main.s"
 .PHONY : help
 
 
