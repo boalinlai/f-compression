@@ -5,11 +5,13 @@
 #include <bitset>
 #include <thread>
 #include <functional>
+#include <mutex>
 #include "nlohmann/json.hpp"
 
 using namespace std;
 using json = nlohmann::json;
 
+mutex mtx;
 const int l_size = sizeof(unsigned long)*8; //8 bits
 
 Huffman::Huffman(string fn):filename(fn), num_of_cpus(getCPUNo())
@@ -17,6 +19,7 @@ Huffman::Huffman(string fn):filename(fn), num_of_cpus(getCPUNo())
 
 }
 
+/* Prints the Huffman code for each character */
 void Huffman::printCodes(struct MinHeapNode* root, string str)
 {
 
@@ -81,6 +84,8 @@ void Huffman::constructHeap()
 // function encode and decodes
 
 void Huffman::writeBinThread(int thread_id, int thread_no){
+
+    mtx.lock();
 	
 	string source_file = filename + ".txt";
 	string encoded_file = filename + "_en_" +  to_string(thread_id);
@@ -93,7 +98,7 @@ void Huffman::writeBinThread(int thread_id, int thread_no){
     int f_size = codestream.tellg();
 	codestream.seekg(0, codestream.beg);
 	
-	cout << thread_id << ": f_size: " << f_size << "\n";
+	// cout << thread_id << ": f_size: " << f_size << "\n";
 	
 	codestream.seekg(thread_id*f_size/thread_no, codestream.beg);
 	
@@ -126,8 +131,8 @@ void Huffman::writeBinThread(int thread_id, int thread_no){
 
     unsigned long long e_size = bin_encoded_text.size();
 
-    cout << "en checksum: " << checksum << endl;
-    cout << "en size : " << e_size << endl;	
+    cout << "encode checksum: " << checksum << endl;
+    cout << "encode size : " << e_size << endl;
 	
     json parity_json;
 
@@ -162,6 +167,8 @@ void Huffman::writeBinThread(int thread_id, int thread_no){
     }
 
 	encodestream.close();
+
+    mtx.unlock();
 }
 
 void Huffman::encode()
@@ -185,7 +192,7 @@ void Huffman::encode()
     constructHeap();
 	//for (auto it : freq) 
 		//cout << " " << it.first << ":" << it.second;
-	printCodes(minHeap.top(), "");
+	//printCodes(minHeap.top(), "");
 	
 	int n = getCPUNo();
 	
@@ -199,7 +206,7 @@ void Huffman::encode()
         myThreads[i].join();
     }
 	
-	cout << "Encode Finishes.\n";
+	cout << "Encode Finishes.\n\n\n";
 
     json freq_map_json;
 
@@ -215,19 +222,21 @@ void Huffman::encode()
 
 void Huffman::readBinThread(int thread_id, int thread_no) {
 
+    mtx.lock();
+
     ifstream i(filename + "_en_" + to_string(thread_id) +  ".json");
     json parity_json;
     i >> parity_json;
     unsigned long long checksum = parity_json["checksum"].get<unsigned long long>();
     unsigned long long size = parity_json["size"].get<unsigned long long>();
 
-    cout << "de checksum: " << checksum << endl;
-    cout << "de size : " << size << endl;
+    cout << "decode checksum: " << checksum << endl;
+    cout << "decode size : " << size << endl;
 
 	string encoded_file = filename + "_en_" + to_string(thread_id);
 	string decoded_file = filename + "_de_" + to_string(thread_id);
 
-	cout << thread_id << "\n";
+	// cout << thread_id << "\n";
 
 	ifstream codestream(encoded_file, ios::binary | ios::in);			
     codestream >> noskipws; // read space?
@@ -263,7 +272,8 @@ void Huffman::readBinThread(int thread_id, int thread_no) {
 	decodestream = ofstream(decoded_file, ios::out);
 	decodestream << decoded_text;
     decodestream.close();
-	
+
+    mtx.unlock();
 }
 
 void Huffman::decode(){
@@ -281,7 +291,7 @@ void Huffman::decode(){
     constructHeap();	
 	// (auto it : freq) 
 		//cout << " " << it.first << ":" << it.second;
-	printCodes(minHeap.top(), "");
+	// printCodes(minHeap.top(), "");
 		
 	thread myThreads[n];
 	
@@ -292,8 +302,9 @@ void Huffman::decode(){
 	for (int i=0; i<n; i++){
         myThreads[i].join();
     }
-	
-	cout << "Decode Finishes.\n";
+
+    cout << "\nDecoded file has been written to " << filename << "_decoded.txt" << endl;
+	cout << "Decode Finishes.\n\n\n";
 
 	concatFiles();
 	
