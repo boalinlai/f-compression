@@ -44,7 +44,8 @@ int main()
         cout << "Enter the text filename (press 1 will default to alice.txt)" << endl;
         cin >> filename;
 
-        filename = ("1" ? "alice" : filename);
+        if (filename == "1")
+            filename = "alice";
 
         while (!file_exist((filename + ".txt").c_str())) {
             cout << filename << " does not exist. Please re-enter: ";
